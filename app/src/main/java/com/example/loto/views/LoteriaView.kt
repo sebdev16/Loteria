@@ -21,23 +21,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.loto.viewModels.LoteriaViewModels
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun LoteriaView(viewModels: LoteriaViewModels)
 {
-    val lottoNumbers = viewModels.lotoNumbers.value
+    val lottoNumbers by viewModels.lotoNumbers.collectAsState()
+    val isLoading by viewModels.isLoading.collectAsState()
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if(lottoNumbers.isEmpty())
+        if(isLoading)
         {
-            Text(text = "Loteria", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+            CircularProgressIndicator(modifier = Modifier.size(80.dp))
         }
         else
         {
-            LotteryNumbers(lottoNumbers)
+            if (lottoNumbers.isEmpty()) {
+                Text(text = "Loteria", fontSize = 40.sp, fontWeight = FontWeight.Bold)
+            } else {
+                LotteryNumbers(lottoNumbers)
+            }
         }
 
         Button(onClick = {viewModels.generateLotoNumbers()})
@@ -49,11 +60,17 @@ fun LoteriaView(viewModels: LoteriaViewModels)
 
 @Composable
 fun LotteryNumbers(lottoNumbers: List<Int>) {
+
+    val coroutineScope = rememberCoroutineScope()
+
     LazyRow (
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     )
     {
         items(lottoNumbers){ number ->
+            coroutineScope.launch {
+                delay(500) // Retardo de 500ms antes de cada círculo
+            }
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
